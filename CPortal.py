@@ -47,7 +47,7 @@ class CPortal:
         except mysql.connector.Error as err:
             return err.errno
         else:
-            self.cursor=connection.cursor()
+            self.cursor=self.connection.cursor()
             self.loginsuccess = 1
             return 0
     def q_sort(self,left,right):
