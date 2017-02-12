@@ -1,6 +1,5 @@
 import sys
 import random
-sys.path.append('C:\\Python36-32\\mysql-connector-python-2.0.4\\lib')
 import mysql.connector
 from mysql.connector import errorcode
 from CRefine import *
@@ -83,12 +82,12 @@ class CPortal:
         self.maxMem=0
         self.maxSlot=0
         self.remained=0
-        if loginsuccess==0:
+        if self.loginsuccess==0:
             return 1
         query="select name from Member"
         self.cursor.execute(query)
-        for name in cursor:
-            self.AddMember(name)
+        for name in self.cursor:
+            self.AddMember(name[0],0)
     def LoadData(self,y,m,d):
         if self.loginsuccess==0:
             return 1
@@ -99,10 +98,14 @@ class CPortal:
             m2 -= 12
         for i in range(0,self.maxMem):
             tmpname = self.member[i].name
-            query="select outdate,indate,priority from Application where name like "+tmpname+" and outdate>='%d-%d-%d' and outdate<'%d-%d-1'"
-            self.cursor.execute(query,y,m,d,y2,m2)
+            query = "select outdate,indate,priority from Application where memNo like "
+            query += str(i)+" and outdate>='"
+            query += str(y)+"-"+str(m)+"-"+str(d)
+            query += "' and indate<'"
+            query += str(y2)+"-"+str(m2)+"-1'"
+            self.cursor.execute(query)
             self.member[i].allocated=1
-            for (outdate,indate,priority) in cursor:
+            for (outdate,indate,priority) in self.cursor:
                 self.member[i].allocated=0
                 self.member[i].wish[priority].start = CRefine(outdate)
                 self.member[i].wish[priority].end = CRefine(indate)
@@ -130,12 +133,12 @@ class CPortal:
             if self.member[i].name == name:
                 return i
         return -2
-    def AddMember(self,name):
+    def AddMember(self,name,qgo):
         i=self.SearchMemNo(name)
         if i>=0:
             return i
-        if self.loginsuccess>0:
-            query = "insert into Member name values "+name
+        if self.loginsuccess>0 and qgo>0:
+            query = "insert into Member values ("+str(self.maxMem)+",'"+name+"')"
             self.cursor.execute(query)
         self.member.append(Member())
         self.member[self.maxMem].name=name
@@ -225,15 +228,16 @@ class CPortal:
             level += 1
         return 0
     def SubmitWish(self,no,priority, y,m,d):
+        priority -= 1
         if type(no)==str:
-            no=self.AddMember(no)
+            no=self.AddMember(no,1)
             if no<0:
                 return no
         if no>=self.maxMem or no<0:
             return -1
-        if priority<0 or priority>3:
+        if priority<0 or priority>2:
             return -2
-        for i in range(priority-1,3):
+        for i in range(priority,3):
             self.member[no].wish[i].start = CRefine(y,m,d)
             self.member[no].wish[i].end = CRefine(y,m,d)
             self.member[no].wish[i].end.addDay(3)
@@ -241,12 +245,13 @@ class CPortal:
         if self.loginsuccess>0:
             outdatestr = self.member[no].wish[priority].start.refineToString()
             indatestr = self.member[no].wish[priority].end.refineToString()
-            query = "insert into Application (outdate,indate,priority) values ('%s','%s',%d)"
-            cursor.execute(query,outdatestr,indatestr,priority)
+            query = "insert into Application (memNo,outdate,indate,priority) values ("
+            query += str(no)+",'"+outdatestr + "','"+ indatestr + "'," + str(priority) + ")"
+            self.cursor.execute(query)
         return 0
     def InsertFixed(self,no, y,m,d, y2,m2,d2):
         if type(no)==str:
-            no=self.AddMember(no)
+            no=self.AddMember(no,1)
             if no<0:
                 return no
         self.member[no].wish[0].start = CRefine(y,m,d)
@@ -254,8 +259,8 @@ class CPortal:
         self.member[no].allocated = 2
         self.remained -= 1
         if self.loginsuccess>0:
-            outdatestr = self.member[no].wish[priority].start.refineToString()
-            indatestr = self.member[no].wish[priority].end.refineToString()
+            outdatestr = self.member[no].wish[0].start.refineToString()
+            indatestr = self.member[no].wish[0].end.refineToString()
             query = "insert into fixed (outdate,indate) values ('%s','%s')"
-            cursor.execute(query,outdatestr,indatestr)
+            self.cursor.execute(query,outdatestr,indatestr)
         return 0
