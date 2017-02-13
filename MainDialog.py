@@ -70,7 +70,7 @@ class MainDialog(QWidget):
         self.MainButton6.clicked.connect(self.Func7)
         self.MainButton7 = QPushButton('종료 (F8)',self)
         self.MainButton7.resize(150,35)
-        self.MainButton7.move(730,270)
+        self.MainButton7.move(730,430)
         self.MainButton7.clicked.connect(self.Func8)
         
         self.Label1 = QLabel('이름 : ',self)
@@ -418,6 +418,7 @@ class MainDialog(QWidget):
             self.MainButton4.show()
             self.MainButton5.show()
             self.MainButton6.show()
+            self.MainButton7.move(730,270)
             self.portal.LoadMember()
         elif err == 1045:
             msg = QMessageBox.warning(self,'에러!!!','ID 혹은 비밀번호가 잘 못 되었습니다.', QMessageBox.Yes, QMessageBox.Yes)
