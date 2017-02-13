@@ -154,7 +154,7 @@ class MainDialog(QWidget):
         self.move(qr.topLeft())
     def keyPressEvent(self, e):
         if e.key()==Qt.Key_F1:
-            msg = QMessageBox.information(self,'제작자','1064기 민병욱 제작\n010-6220-9334\nphraust@kaist.ac.kr', QMessageBox.Yes, QMessageBox.Yes)
+            msg = QMessageBox.information(self,'제작자','1064기 민병욱 제작\n010-6220-9334\nphraust@kaist.ac.kr', QMessageBox.Ok)
         elif e.key()==Qt.Key_F2 and self.mode!=0:
             self.Func2()
         elif e.key()==Qt.Key_F3 and self.mode!=0:
