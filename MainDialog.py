@@ -1,11 +1,11 @@
 import sys
-import uuid
+"""import uuid
 import decimal
 import Queue
 import xmlrpc
 import xmlrpc.client
 import urllib.request
-import configparser
+import configparser"""
 from CPortal import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -23,6 +23,8 @@ class MainDialog(QWidget):
         self.setWindowTitle('외박포탈프로그램4.0')
         self.setWindowIcon(QIcon('charm2.ico'))
         self.mode = 0
+        self.setWindowFlags(Qt.CustomizeWindowHint)
+        self.setWindowFlags(Qt.WindowTitleHint)
 
         self.LabelID = QLabel('ID : ', self)
         self.LabelPW = QLabel('PW : ', self)
@@ -66,6 +68,10 @@ class MainDialog(QWidget):
         self.MainButton6.resize(150,35)
         self.MainButton6.move(730,230)
         self.MainButton6.clicked.connect(self.Func7)
+        self.MainButton7 = QPushButton('종료 (F8)',self)
+        self.MainButton7.resize(150,35)
+        self.MainButton7.move(730,270)
+        self.MainButton7.clicked.connect(self.Func8)
         
         self.Label1 = QLabel('이름 : ',self)
         self.Label21 = QLabel("시작날짜 : ",self)
@@ -161,6 +167,8 @@ class MainDialog(QWidget):
             self.Func6()
         elif e.key()==Qt.Key_F7 and self.mode!=0:
             self.Func7()
+        elif e.key()==Qt.Key_F8:
+            self.Func8()
         elif e.key()==Qt.Key_Enter or e.key()==Qt.Key_Return:
             self.Confirm()
             if self.mode==2 or self.mode==5:
@@ -291,9 +299,11 @@ class MainDialog(QWidget):
         self.Button1.show()
         self.Button1.setFocus()
     def Func7(self):
-        self.mode = 7
-        self.portal.FlushData(2000,1)
+        self.portal.FlushData()
         msg = QMessageBox.information(self,'ㅇㅋ','초기화됨', QMessageBox.Yes, QMessageBox.Yes)
+    def Func8(self):
+        self.portal.__del__()
+        self.close()
     def Confirm(self):
         name = self.Edit1.text()
         year1 = self.Edit21.text()
@@ -408,6 +418,7 @@ class MainDialog(QWidget):
             self.MainButton4.show()
             self.MainButton5.show()
             self.MainButton6.show()
+            self.portal.LoadMember()
         elif err == 1045:
             msg = QMessageBox.warning(self,'에러!!!','ID 혹은 비밀번호가 잘 못 되었습니다.', QMessageBox.Yes, QMessageBox.Yes)
         elif err == 1049:

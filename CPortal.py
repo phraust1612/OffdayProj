@@ -1,4 +1,3 @@
-import sys
 import random
 import mysql.connector
 from mysql.connector import errorcode
@@ -33,9 +32,18 @@ class CPortal:
         self.p = []
         self.r = []
     def __del__(self):
+        self.loginsuccess = 0
+        self.p_err = 0
+        self.slot = 0
+        self.member = 0
+        self.maxMem = 0
+        self.maxSlot = 0
+        self.remained = 0
+        self.p = 0
+        self.r = 0
         try:
             self.cursor
-        except NameError:
+        except AttributeError:
             pass
         else:
             self.connection.close()
@@ -109,7 +117,10 @@ class CPortal:
                 self.member[i].allocated=0
                 self.member[i].wish[priority].start = CRefine(outdate)
                 self.member[i].wish[priority].end = CRefine(indate)
-    def FlushData(self,y,m):
+    def FlushData(self):
+        if len(self.slot)>0:
+            outstr = self.slot[0].start.refineToString()
+            instr = self.slot[self.maxSlot-1].end.refineToString()
         self.member.clear()
         self.slot.clear()
         self.maxMem=0
@@ -119,15 +130,22 @@ class CPortal:
         self.remained=0
         if self.loginsuccess==0:
             return
-        y2 = y
-        m2 = m+2
-        if m2>12:
-            y2 += 1
-            m2 -= 12
-        query = "delete from Application where outdate>='%d-%d-1' and outdate<'%d-%d-1'"
-        self.cursor.execute(query,y,m,y2,m2)
-        query = "delete from Fixed where outdate>='%d-%d-1' and outdate<'%d-%d-1'"
-        self.cursor.execute(query,y,m,y2,m2)
+        try:
+            outstr
+        except AttributeError:
+            return
+        except NameError:
+            return
+        else:
+            pass
+        query = "delete from Application where outdate>='"
+        query += outstr + "' and outdate<'"
+        query += instr + "'"
+        self.cursor.execute(query)
+        query = "delete from Fixed where outdate>='"
+        query += outstr + "' and outdate<'"
+        query += instr + "'"
+        self.cursor.execute(query)
     def SearchMemNo(self,name):
         for i in range(0,self.maxMem):
             if self.member[i].name == name:
@@ -145,16 +163,8 @@ class CPortal:
         self.maxMem+=1
         self.remained+=1
         return self.maxMem-1
-    def AddSlot(self,y,m,d):
-        self.LoadData(y,m,d)
-        self.slot.append(Slot())
-        self.slot[self.maxSlot].start=CRefine(y,m,d)
-        self.slot[self.maxSlot].end=CRefine(y,m,d)
-        self.slot[self.maxSlot].end.addDay(3)
-        self.slot[self.maxSlot].num=0
-        self.maxSlot+=1
-        return 0
     def AutoAllocateSlot(self,y,m,d):
+        self.LoadData(y,m,d)
         PeriodEnd = CRefine(y,m,d)
         while PeriodEnd.m-m<2 and m-PeriodEnd.m<2:
             self.slot.append(Slot())
