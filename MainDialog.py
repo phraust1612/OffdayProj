@@ -93,7 +93,7 @@ class MainDialog(QWidget):
         self.ResLabel = []
         for i in range(0,16):
             self.ResLabel.append(QLabel(self))
-            self.ResLabel[i].move(300,20*i+25)
+            self.ResLabel[i].move(50,20*i+25)
             self.ResLabel[i].hide()
         
         self.Edit1 = QLineEdit(self)
@@ -254,29 +254,11 @@ class MainDialog(QWidget):
         self.Edit1.setFocus()
         self.Edit1.selectAll()
     def Func5(self):
-        self.mode = 5
-        self.Label1.hide()
-        self.Label21.show()
-        self.Label22.show()
-        self.Label23.show()
-        self.Label31.hide()
-        self.Label32.hide()
-        self.Label33.hide()
-        self.Label4.hide()
-        self.Edit1.hide()
-        self.Edit21.show()
-        self.Edit22.show()
-        self.Edit23.show()
-        self.Edit31.hide()
-        self.Edit32.hide()
-        self.Edit33.hide()
-        self.Edit4.hide()
-        for i in range(0,16):
-            self.ResLabel[i].hide()
-        self.Button1.move(200,60)
-        self.Button1.show()
-        self.Edit21.setFocus()
-        self.Edit21.selectAll()
+        err = self.Simulate()
+        if err==0:
+            msg = QMessageBox.information(self,'ㅇㅋ','랜덤배치성공', QMessageBox.Yes, QMessageBox.Yes)
+        else:
+            msg = QMessageBox.warning(self,'ㄴㄴ!!','실패!!', QMessageBox.Yes, QMessageBox.Yes)
     def Func6(self):
         self.mode = 6
         self.Label1.hide()
@@ -296,8 +278,8 @@ class MainDialog(QWidget):
         self.Edit33.hide()
         self.Edit4.hide()
         self.Button1.move(165,60)
-        self.Button1.show()
-        self.Button1.setFocus()
+        self.Button1.hide()
+        self.ShowResult()
     def Func7(self):
         self.portal.FlushData()
         msg = QMessageBox.information(self,'ㅇㅋ','초기화됨', QMessageBox.Yes, QMessageBox.Yes)
@@ -393,14 +375,6 @@ class MainDialog(QWidget):
                 msg = QMessageBox.information(self,'ㅇㅋ','입력됨', QMessageBox.Yes, QMessageBox.Yes)
             else:
                 msg = QMessageBox.warning(self,'ㄴㄴ!!','지망입력실패', QMessageBox.Yes, QMessageBox.Yes)
-        elif self.mode == 5:
-            err = self.Simulate(year1,month1,day1)
-            if err==0:
-                msg = QMessageBox.information(self,'ㅇㅋ','랜덤배치성공', QMessageBox.Yes, QMessageBox.Yes)
-            else:
-                msg = QMessageBox.warning(self,'ㄴㄴ!!','실패!!', QMessageBox.Yes, QMessageBox.Yes)
-        elif self.mode == 6:
-            self.ShowResult()
         else:
             return
     def TryLogin(self,ID,PW):
@@ -433,8 +407,8 @@ class MainDialog(QWidget):
         return self.portal.InsertFixed(name,y,m,d,y2,m2,d2)
     def SubmitWish(self,name,p,y,m,d):
         return self.portal.SubmitWish(name,p,y,m,d)
-    def Simulate(self,y,m,d):
-        return self.portal.RandSimulate(y,m,d)
+    def Simulate(self):
+        return self.portal.RandSimulate()
     def ShowResult(self):
         for i in range(0,self.portal.maxSlot):
             tmp = self.portal.slot[i].start.refineToString()

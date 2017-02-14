@@ -10,8 +10,10 @@ class InfoStr:
 class Member:
     def __init__(self):
         self.name = ""
-        self.allocated = 0
+        #default allocated : 1 / 0 when it has an application
+        self.allocated = 1
         self.wish = [InfoStr(),InfoStr(),InfoStr()]
+        self.fixed = []
 
 class Slot:
     def __init__(self):
@@ -28,7 +30,6 @@ class CPortal:
         self.member = []
         self.maxMem = 0
         self.maxSlot = 0
-        self.remained = 0
         self.p = []
         self.r = []
     def __del__(self):
@@ -38,7 +39,6 @@ class CPortal:
         self.member = 0
         self.maxMem = 0
         self.maxSlot = 0
-        self.remained = 0
         self.p = 0
         self.r = 0
         try:
@@ -89,7 +89,6 @@ class CPortal:
     def LoadMember(self):
         self.maxMem=0
         self.maxSlot=0
-        self.remained=0
         if self.loginsuccess==0:
             return 1
         query="select name from Member"
@@ -114,6 +113,7 @@ class CPortal:
             self.cursor.execute(query)
             self.member[i].allocated=1
             for (outdate,indate,priority) in self.cursor:
+                #allocated = 0  if application exists
                 self.member[i].allocated=0
                 self.member[i].wish[priority].start = CRefine(outdate)
                 self.member[i].wish[priority].end = CRefine(indate)
@@ -127,7 +127,6 @@ class CPortal:
         self.maxSlot=0
         self.p.clear()
         self.r.clear()
-        self.remained=0
         if self.loginsuccess==0:
             return
         try:
@@ -137,15 +136,14 @@ class CPortal:
         except NameError:
             return
         else:
-            pass
-        query = "delete from Application where outdate>='"
-        query += outstr + "' and outdate<'"
-        query += instr + "'"
-        self.cursor.execute(query)
-        query = "delete from Fixed where outdate>='"
-        query += outstr + "' and outdate<'"
-        query += instr + "'"
-        self.cursor.execute(query)
+            query = "delete from Application where outdate>='"
+            query += outstr + "' and outdate<'"
+            query += instr + "'"
+            self.cursor.execute(query)
+            query = "delete from Fixed where outdate>='"
+            query += outstr + "' and outdate<'"
+            query += instr + "'"
+            self.cursor.execute(query)
     def SearchMemNo(self,name):
         for i in range(0,self.maxMem):
             if self.member[i].name == name:
@@ -161,7 +159,6 @@ class CPortal:
         self.member.append(Member())
         self.member[self.maxMem].name=name
         self.maxMem+=1
-        self.remained+=1
         return self.maxMem-1
     def AutoAllocateSlot(self,y,m,d):
         self.LoadData(y,m,d)
@@ -175,67 +172,47 @@ class CPortal:
             self.maxSlot+=1
             PeriodEnd.addDay(4)
         return 0
-    def RandSimulate(self,y,m,d):
+    def RandSimulate(self):
+        #reset slots
         for i in range(0,self.maxSlot):
             self.slot[i].list.clear()
+        #allocate fixed vacations
         for i in range(0,self.maxMem):
-            #allocate fixed vacations
-            if self.member[i].allocated>0:
+            for j in self.member[i].fixed:
                 slotleft=0
-                while slotleft<self.maxSlot and self.member[i].wish[0].start.diffBtwn(self.slot[slotleft].start)>=0:
+                while slotleft<self.maxSlot and j.start.diffBtwn(self.slot[slotleft].start)>=0:
                     slotleft+=1
                 slotleft-=1
                 if slotleft>=self.maxSlot:
-                    self.member[i].allocated=3
-                    self.remained-=1
                     continue
                 slotright=slotleft
-                while slotright<self.maxSlot and self.member[i].wish[0].end.diffBtwn(self.slot[slotright].end)>0:
+                while slotright<self.maxSlot and j.end.diffBtwn(self.slot[slotright].end)>0:
                     slotright+=1
                 if slotright>=self.maxSlot:
                     slotright=self.maxSlot-1
-                for j in range(slotleft,slotright+1):
-                    self.slot[j].list.append(i)
-                    self.slot[j].num+=1
+                for k in range(slotleft,slotright+1):
+                    self.slot[k].list.append(i)
+                    self.slot[k].num+=1
+        #clear and randomly sort members
         self.p.clear()
         self.r.clear()
         for i in range(0,self.maxMem):
             self.p.append(i)
             self.r.append(random.random())
         self.q_sort(0,self.maxMem-1)
-        level=0
-        while self.remained>0 and level<2:
-            for i in range(0,self.maxMem):
-                if self.member[self.p[i]].allocated > 0:
-                    continue
-                for j in range(0,self.maxSlot):
-                    if self.slot[j].start.diffBtwn(self.member[self.p[i]].wish[0].start) == 0:
-                        break
-                if self.slot[j].num<=level:
-                    self.slot[j].list.append(self.p[i])
-                    self.slot[j].num += 1
-                    self.member[self.p[i]].allocated = 1
-                    self.remained -= 1
-                    continue
-                for j in range(0,self.maxSlot):
-                    if self.slot[j].start.diffBtwn(self.member[self.p[i]].wish[1].start) == 0:
-                        break
-                if self.slot[j].num<=level:
-                    self.slot[j].list.append(self.p[i])
-                    self.slot[j].num += 1
-                    self.member[self.p[i]].allocated = 1
-                    self.remained -= 1
-                    continue
-                for j in range(0,self.maxSlot):
-                    if self.slot[j].start.diffBtwn(self.member[self.p[i]].wish[2].start) == 0:
-                        break
-                if self.slot[j].num<=level:
-                    self.slot[j].list.append(self.p[i])
-                    self.slot[j].num += 1
-                    self.member[self.p[i]].allocated = 1
-                    self.remained -= 1
-                    continue
-            level += 1
+        #allocate vacations
+        for i in self.slot:
+            for k in range(0,3):
+                for j in range(0,self.maxMem):
+                    #if this slot is full, go for next one
+                    if i.num > 1:
+                        continue
+                    if self.member[self.p[j]].allocated > 0:
+                        continue
+                    if self.member[self.p[j]].wish[k].start.diffBtwn(i.start)==0:
+                        i.list.append(self.p[j])
+                        i.num += 1
+                        self.member[self.p[j]].allocated = 1
         return 0
     def SubmitWish(self,no,priority, y,m,d):
         priority -= 1
@@ -264,13 +241,15 @@ class CPortal:
             no=self.AddMember(no,1)
             if no<0:
                 return no
-        self.member[no].wish[0].start = CRefine(y,m,d)
-        self.member[no].wish[0].end = CRefine(y2,m2,d2)
-        self.member[no].allocated = 2
-        self.remained -= 1
+        self.member[no].fixed.append(InfoStr())
+        tlen = len(self.member[no].fixed) - 1
+        self.member[no].fixed[tlen].start = CRefine(y,m,d)
+        self.member[no].fixed[tlen].end = CRefine(y2,m2,d2)
         if self.loginsuccess>0:
-            outdatestr = self.member[no].wish[0].start.refineToString()
-            indatestr = self.member[no].wish[0].end.refineToString()
-            query = "insert into fixed (outdate,indate) values ('%s','%s')"
-            self.cursor.execute(query,outdatestr,indatestr)
+            outdatestr = self.member[no].fixed[tlen].start.refineToString()
+            indatestr = self.member[no].fixed[tlen].end.refineToString()
+            query = "insert into fixed (outdate,indate) values ('"
+            query += outdatestr +"','"
+            query += indatestr + "')"
+            self.cursor.execute(query)
         return 0
