@@ -20,7 +20,7 @@ class MainDialog(QWidget):
     def initUI(self):
         self.setFixedSize(890,480)
         self.center()
-        self.setWindowTitle('외박포탈프로그램4.0')
+        self.setWindowTitle('외박포탈프로그램4.0 beta+')
         self.setWindowIcon(QIcon('charm2.ico'))
         self.mode = 0
         self.setWindowFlags(Qt.CustomizeWindowHint)
@@ -277,7 +277,7 @@ class MainDialog(QWidget):
         if err==0:
             msg = QMessageBox.information(self,'ㅇㅋ','랜덤배치성공', QMessageBox.Yes, QMessageBox.Yes)
         else:
-            msg = QMessageBox.warning(self,'ㄴㄴ!!','실패!!', QMessageBox.Yes, QMessageBox.Yes)
+            msg = QMessageBox.warning(self,'ㄴㄴ!!','실패!! : '+str(err), QMessageBox.Yes, QMessageBox.Yes)
     def Func6(self):
         self.mode = 6
         self.Label1.hide()
@@ -413,19 +413,19 @@ class MainDialog(QWidget):
             if err==0:
                 msg = QMessageBox.information(self,'ㅇㅋ','슬롯배치됨', QMessageBox.Yes, QMessageBox.Yes)
             else:
-                msg = QMessageBox.warning(self,'ㄴㄴ!!','슬롯배치실패', QMessageBox.Yes, QMessageBox.Yes)
+                msg = QMessageBox.warning(self,'ㄴㄴ!!','슬롯배치실패 : '+str(err), QMessageBox.Yes, QMessageBox.Yes)
         elif self.mode == 3:
             err = self.InputFixed(name,year1,month1,day1,year2,month2,day2)
             if err==0:
                 msg = QMessageBox.information(self,'ㅇㅋ','입력됨', QMessageBox.Yes, QMessageBox.Yes)
             else:
-                msg = QMessageBox.warning(self,'ㄴㄴ!!','휴가입력실패', QMessageBox.Yes, QMessageBox.Yes)
+                msg = QMessageBox.warning(self,'ㄴㄴ!!','휴가입력실패 : '+str(err), QMessageBox.Yes, QMessageBox.Yes)
         elif self.mode == 4:
             err = self.SubmitWish(name,prior,year1,month1,day1)
             if err==0:
                 msg = QMessageBox.information(self,'ㅇㅋ','입력됨', QMessageBox.Yes, QMessageBox.Yes)
             else:
-                msg = QMessageBox.warning(self,'ㄴㄴ!!','지망입력실패', QMessageBox.Yes, QMessageBox.Yes)
+                msg = QMessageBox.warning(self,'ㄴㄴ!!','지망입력실패 : '+str(err), QMessageBox.Yes, QMessageBox.Yes)
         elif self.mode == 9:
             ID = self.EditID.text()
             PW = self.EditPW.text()
@@ -433,7 +433,7 @@ class MainDialog(QWidget):
             if err==0:
                 msg = QMessageBox.information(self,'ㅇㅋ','생성됨', QMessageBox.Yes, QMessageBox.Yes)
             else:
-                msg = QMessageBox.warning(self,'ㄴㄴ!!','생성실패', QMessageBox.Yes, QMessageBox.Yes)
+                msg = QMessageBox.warning(self,'ㄴㄴ!!','생성실패 : '+str(err), QMessageBox.Yes, QMessageBox.Yes)
         else:
             return
     def TryLogin(self,ID,PW):
@@ -445,15 +445,21 @@ class MainDialog(QWidget):
             self.EditID.hide()
             self.EditPW.hide()
             self.Button1.hide()
-            self.MainButton1.show()
-            self.MainButton2.show()
             self.MainButton3.show()
-            self.MainButton4.show()
-            self.MainButton5.show()
-            self.MainButton6.show()
-            self.MainButton7.move(730,310)
             self.MainButton8.show()
             self.portal.LoadMember()
+            if self.portal.loginsuccess == 1:
+                self.MainButton1.show()
+                self.MainButton2.show()
+                self.MainButton4.show()
+                self.MainButton5.show()
+                self.MainButton6.show()
+                self.MainButton7.move(730,310)
+            elif self.portal.loginsuccess == 2:
+                self.MainButton3.move(730,30)
+                self.MainButton8.move(730,70)
+                self.MainButton8.setText("비밀번호 수정 (F8)")
+                self.MainButton7.move(730,110)
         elif err == 1045:
             msg = QMessageBox.warning(self,'에러!!!','ID 혹은 비밀번호가 잘 못 되었습니다.', QMessageBox.Yes, QMessageBox.Yes)
         elif err == 1049:

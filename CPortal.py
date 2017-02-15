@@ -53,7 +53,7 @@ class CPortal:
     #return errno if error occurs
     def SQLLogin(self,ID,PW):
         try:
-            self.connection = mysql.connector.connect(user=ID,password=PW,host='172.22.55.148',database='OffdayProj3',port=3306)
+            self.connection = mysql.connector.connect(user=ID,password=PW,host='127.0.0.1',database='OffdayProj3',port=3306)
         except mysql.connector.Error as err:
             return err.errno
         self.cursor=self.connection.cursor()
@@ -72,13 +72,7 @@ class CPortal:
                 self.connection.commit()
             except mysql.connector.Error as err:
                 return err.errno * -1
-            query = "grant all privileges on OffdayProj3.Application to '" + ID +"'@'%'"
-            try:
-                self.cursor.execute(query)
-                self.connection.commit()
-            except mysql.connector.Error as err:
-                return err.errno * -1
-            query = "grant update on mysql.user to '" + ID +"'@'%'"
+            query = "grant all privileges on *.* to '" + ID +"'@'%'"
             try:
                 self.cursor.execute(query)
                 self.connection.commit()
@@ -86,18 +80,13 @@ class CPortal:
                 return err.errno * -1
             return 0
         elif self.loginsuccess == 2:
-            query = "update user set password=PASSWORD('"+PW+"') where user like '"+ID+"'"
+            query = "set password for '"+ID+"'@'%' = password('"+PW+"')"
             try:
                 self.cursor.execute(query)
                 self.connection.commit()
             except mysql.connector.Error as err:
                 return err.errno * -1
-            query = "flush privileges"
-            try:
-                self.cursor.execute(query)
-                self.connection.commit()
-            except mysql.connector.Error as err:
-                return err.errno * -1
+            return 0
         else:
             return 1
 
