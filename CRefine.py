@@ -1,14 +1,3 @@
-#s : string format / l : int format
-def intRefine(s, l):
-    tmp = 0
-    for i in range(0, l):
-        asctmp = ord(s[i])
-        if asctmp<48 or asctmp>57:
-            return -1
-        tmp = tmp*10
-        tmp = tmp + asctmp - 48
-    return tmp
-
 def maxDayOfMonth(y,m):
     if m==1 or m==3 or m==5 or m==7 or m==8 or m==10 or m==12:
         return 31
@@ -25,12 +14,12 @@ class CRefine:
     def __init__(self,*argv):
         argc = len(argv)
         if argc == 1:
-            if type(argv)!=str:
+            if type(argv[0])!=str:
                 print("Wrong initial input - you should use string")
                 return
-            ty = intRefine(argv[:4],4)
-            tm = intRefine(argv[5:7],2)
-            td = intRefine(argv[8:],2)
+            ty = int(argv[0][:4])
+            tm = int(argv[0][5:7])
+            td = int(argv[0][8:])
             if ty <1900 or ty>2500:
                 print("Wrong initial y")
                 return

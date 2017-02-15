@@ -68,7 +68,11 @@ class MainDialog(QWidget):
         self.MainButton6.resize(150,35)
         self.MainButton6.move(730,230)
         self.MainButton6.clicked.connect(self.Func7)
-        self.MainButton7 = QPushButton('종료 (F8)',self)
+        self.MainButton8 = QPushButton('사용자추가 (F8)',self)
+        self.MainButton8.resize(150,35)
+        self.MainButton8.move(730,270)
+        self.MainButton8.clicked.connect(self.Func9)
+        self.MainButton7 = QPushButton('종료 (F9)',self)
         self.MainButton7.resize(150,35)
         self.MainButton7.move(730,430)
         self.MainButton7.clicked.connect(self.Func8)
@@ -146,6 +150,7 @@ class MainDialog(QWidget):
         self.MainButton4.hide()
         self.MainButton5.hide()
         self.MainButton6.hide()
+        self.MainButton8.hide()
         self.show()
     def center(self):
         qr = self.frameGeometry()
@@ -167,11 +172,13 @@ class MainDialog(QWidget):
             self.Func6()
         elif e.key()==Qt.Key_F7 and self.mode!=0:
             self.Func7()
-        elif e.key()==Qt.Key_F8:
+        elif e.key()==Qt.Key_F9:
             self.Func8()
+        elif e.key()==Qt.Key_F8 and self.mode!=0:
+            self.Func9()
         elif e.key()==Qt.Key_Enter or e.key()==Qt.Key_Return:
             self.Confirm()
-            if self.mode==2 or self.mode==5:
+            if self.mode==2:
                 self.Edit21.setFocus()
                 self.Edit21.selectAll()
             elif self.mode==3 or self.mode==4:
@@ -199,6 +206,10 @@ class MainDialog(QWidget):
         self.Edit32.hide()
         self.Edit33.hide()
         self.Edit4.hide()
+        self.LabelID.hide()
+        self.LabelPW.hide()
+        self.EditID.hide()
+        self.EditPW.hide()
         for i in range(0,16):
             self.ResLabel[i].hide()
         self.Button1.move(200,60)
@@ -223,6 +234,10 @@ class MainDialog(QWidget):
         self.Edit32.show()
         self.Edit33.show()
         self.Edit4.hide()
+        self.LabelID.hide()
+        self.LabelPW.hide()
+        self.EditID.hide()
+        self.EditPW.hide()
         for i in range(0,16):
             self.ResLabel[i].hide()
         self.Button1.move(200,90)
@@ -247,6 +262,10 @@ class MainDialog(QWidget):
         self.Edit32.hide()
         self.Edit33.hide()
         self.Edit4.show()
+        self.LabelID.hide()
+        self.LabelPW.hide()
+        self.EditID.hide()
+        self.EditPW.hide()
         for i in range(0,16):
             self.ResLabel[i].hide()
         self.Button1.move(115,90)
@@ -277,6 +296,10 @@ class MainDialog(QWidget):
         self.Edit32.hide()
         self.Edit33.hide()
         self.Edit4.hide()
+        self.LabelID.hide()
+        self.LabelPW.hide()
+        self.EditID.hide()
+        self.EditPW.hide()
         self.Button1.move(165,60)
         self.Button1.hide()
         self.ShowResult()
@@ -286,6 +309,34 @@ class MainDialog(QWidget):
     def Func8(self):
         self.portal.__del__()
         self.close()
+    def Func9(self):
+        self.mode = 9
+        self.Label1.hide()
+        self.Label21.hide()
+        self.Label22.hide()
+        self.Label23.hide()
+        self.Label31.hide()
+        self.Label32.hide()
+        self.Label33.hide()
+        self.Label4.hide()
+        self.Edit1.hide()
+        self.Edit21.hide()
+        self.Edit22.hide()
+        self.Edit23.hide()
+        self.Edit31.hide()
+        self.Edit32.hide()
+        self.Edit33.hide()
+        self.Edit4.hide()
+        self.LabelID.show()
+        self.LabelPW.show()
+        self.EditID.show()
+        self.EditPW.show()
+        self.Button1.move(505,220)
+        for i in range(0,16):
+            self.ResLabel[i].hide()
+        self.Button1.show()
+        self.EditID.setFocus()
+        self.EditID.selectAll()
     def Confirm(self):
         name = self.Edit1.text()
         year1 = self.Edit21.text()
@@ -375,6 +426,14 @@ class MainDialog(QWidget):
                 msg = QMessageBox.information(self,'ㅇㅋ','입력됨', QMessageBox.Yes, QMessageBox.Yes)
             else:
                 msg = QMessageBox.warning(self,'ㄴㄴ!!','지망입력실패', QMessageBox.Yes, QMessageBox.Yes)
+        elif self.mode == 9:
+            ID = self.EditID.text()
+            PW = self.EditPW.text()
+            err = self.portal.SQLNewID(ID,PW)
+            if err==0:
+                msg = QMessageBox.information(self,'ㅇㅋ','생성됨', QMessageBox.Yes, QMessageBox.Yes)
+            else:
+                msg = QMessageBox.warning(self,'ㄴㄴ!!','생성실패', QMessageBox.Yes, QMessageBox.Yes)
         else:
             return
     def TryLogin(self,ID,PW):
@@ -392,7 +451,8 @@ class MainDialog(QWidget):
             self.MainButton4.show()
             self.MainButton5.show()
             self.MainButton6.show()
-            self.MainButton7.move(730,270)
+            self.MainButton7.move(730,310)
+            self.MainButton8.show()
             self.portal.LoadMember()
         elif err == 1045:
             msg = QMessageBox.warning(self,'에러!!!','ID 혹은 비밀번호가 잘 못 되었습니다.', QMessageBox.Yes, QMessageBox.Yes)
