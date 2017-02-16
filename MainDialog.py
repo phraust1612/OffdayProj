@@ -181,7 +181,7 @@ class MainDialog(QWidget):
             if self.mode==2:
                 self.Edit21.setFocus()
                 self.Edit21.selectAll()
-            elif self.mode==3 or self.mode==4:
+            elif self.mode==3 or self.mode==4 or self.mode==9:
                 self.Edit1.setFocus()
                 self.Edit1.selectAll()
             else:
@@ -218,7 +218,11 @@ class MainDialog(QWidget):
         self.Edit21.selectAll()
     def Func3(self):
         self.mode = 3
-        self.Label1.show()
+        if self.portal.loginsuccess != 2:
+            self.Label1.show()
+            self.Edit1.show()
+            self.Label1.move(20,35)
+            self.Edit1.move(80,30)
         self.Label21.show()
         self.Label22.show()
         self.Label23.show()
@@ -226,7 +230,6 @@ class MainDialog(QWidget):
         self.Label32.show()
         self.Label33.show()
         self.Label4.hide()
-        self.Edit1.show()
         self.Edit21.show()
         self.Edit22.show()
         self.Edit23.show()
@@ -246,7 +249,11 @@ class MainDialog(QWidget):
         self.Edit1.selectAll()
     def Func4(self):
         self.mode = 4
-        self.Label1.show()
+        if self.portal.loginsuccess != 2:
+            self.Label1.show()
+            self.Edit1.show()
+            self.Label1.move(20,35)
+            self.Edit1.move(80,30)
         self.Label21.show()
         self.Label22.show()
         self.Label23.show()
@@ -254,7 +261,6 @@ class MainDialog(QWidget):
         self.Label32.hide()
         self.Label33.hide()
         self.Label4.show()
-        self.Edit1.show()
         self.Edit21.show()
         self.Edit22.show()
         self.Edit23.show()
@@ -311,7 +317,10 @@ class MainDialog(QWidget):
         self.close()
     def Func9(self):
         self.mode = 9
-        self.Label1.hide()
+        self.Label1.show()
+        self.Label1.move(360,185)
+        self.Edit1.show()
+        self.Edit1.move(400,180)
         self.Label21.hide()
         self.Label22.hide()
         self.Label23.hide()
@@ -319,7 +328,6 @@ class MainDialog(QWidget):
         self.Label32.hide()
         self.Label33.hide()
         self.Label4.hide()
-        self.Edit1.hide()
         self.Edit21.hide()
         self.Edit22.hide()
         self.Edit23.hide()
@@ -335,8 +343,8 @@ class MainDialog(QWidget):
         for i in range(0,16):
             self.ResLabel[i].hide()
         self.Button1.show()
-        self.EditID.setFocus()
-        self.EditID.selectAll()
+        self.Edit1.setFocus()
+        self.Edit1.selectAll()
     def Confirm(self):
         name = self.Edit1.text()
         year1 = self.Edit21.text()
@@ -429,7 +437,7 @@ class MainDialog(QWidget):
         elif self.mode == 9:
             ID = self.EditID.text()
             PW = self.EditPW.text()
-            err = self.portal.SQLNewID(ID,PW)
+            err = self.portal.SQLNewID(ID,PW,name)
             if err==0:
                 msg = QMessageBox.information(self,'ㅇㅋ','생성됨', QMessageBox.Yes, QMessageBox.Yes)
             else:
@@ -448,18 +456,18 @@ class MainDialog(QWidget):
             self.MainButton3.show()
             self.MainButton8.show()
             self.portal.LoadMember()
-            if self.portal.loginsuccess == 1:
+            if self.portal.loginsuccess == 2:
+                self.MainButton3.move(730,30)
+                self.MainButton8.move(730,70)
+                self.MainButton8.setText("비밀번호 수정 (F8)")
+                self.MainButton7.move(730,110)
+            else:
                 self.MainButton1.show()
                 self.MainButton2.show()
                 self.MainButton4.show()
                 self.MainButton5.show()
                 self.MainButton6.show()
                 self.MainButton7.move(730,310)
-            elif self.portal.loginsuccess == 2:
-                self.MainButton3.move(730,30)
-                self.MainButton8.move(730,70)
-                self.MainButton8.setText("비밀번호 수정 (F8)")
-                self.MainButton7.move(730,110)
         elif err == 1045:
             msg = QMessageBox.warning(self,'에러!!!','ID 혹은 비밀번호가 잘 못 되었습니다.', QMessageBox.Yes, QMessageBox.Yes)
         elif err == 1049:

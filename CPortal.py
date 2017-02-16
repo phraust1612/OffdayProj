@@ -30,6 +30,7 @@ class CPortal:
         self.member = []
         self.maxMem = 0
         self.maxSlot = 0
+        self.ID = ""
         self.p = []
         self.r = []
     def __del__(self):
@@ -39,6 +40,7 @@ class CPortal:
         self.member = 0
         self.maxMem = 0
         self.maxSlot = 0
+        self.ID = ""
         self.p = 0
         self.r = 0
         try:
@@ -56,6 +58,7 @@ class CPortal:
             self.connection = mysql.connector.connect(user=ID,password=PW,host='127.0.0.1',database='OffdayProj3',port=3306)
         except mysql.connector.Error as err:
             return err.errno
+        self.ID = ID
         self.cursor=self.connection.cursor()
         if ID=='root':
             self.loginsuccess = 1
@@ -64,7 +67,7 @@ class CPortal:
         return 0
 
     #make a new account and grant it for right privileges
-    def SQLNewID(self,ID,PW):
+    def SQLNewID(self,ID,PW,name):
         if self.loginsuccess ==1:
             query = "create user '" + ID + "'@'%'identified by '" + PW + "'"
             try:
@@ -78,6 +81,7 @@ class CPortal:
                 self.connection.commit()
             except mysql.connector.Error as err:
                 return err.errno * -1
+            AddMember(name,1)
             return 0
         elif self.loginsuccess == 2:
             query = "set password for '"+ID+"'@'%' = password('"+PW+"')"
@@ -228,6 +232,21 @@ class CPortal:
             if self.member[i].name == name:
                 return i
         return -2
+
+    #search memno by self.ID
+    def SearchByID(self):
+        if loginsuccess ==0:
+            return -1
+        query = "select name from Member where ID like '"+self.ID+"'"
+        try:
+            self.cursor.execute(query)
+            self.connection.commit()
+        except mysql.connector.Error as err:
+            return err.errno * -1
+        tname = ""
+        for name in self.cursor:
+            tname = name
+        return SearchMemNo(tname)
     
     #add a new member if he doesn't exist before
     #if no error occurs, return his member no.
@@ -238,7 +257,20 @@ class CPortal:
         if i>=0:
             return i
         if self.loginsuccess>0 and qgo>0:
-            query = "insert into Member values ("+str(self.maxMem)+",'"+name+"')"
+            query = "select memNo from Member where ID like '"+self.ID+"'"
+            try:
+                self.cursor.execute(query)
+                self.connection.commit()
+            except mysql.connector.Error as err:
+                return err.errno * -1
+            tNo = -1
+            for memNo in self.cursor:
+                tNo = memNo
+            if tNo>=0:
+                query = "update Member set name='"+name+"'"
+            else:
+                query = "insert into Member (memNo,name,ID) values ("
+                query += str(self.maxMem)+",'"+name+"','"+self.ID+"')"
             try:
                 self.cursor.execute(query)
                 self.connection.commit()
@@ -312,26 +344,47 @@ class CPortal:
 
     #input query into Application table
     #return negative int if error occurs
-    def SubmitWish(self,no,priority, y,m,d):
-        priority -= 1
+    def SubmitWish(self,no,p, y,m,d):
+        p -= 1
         if type(no)==str:
-            no=self.AddMember(no,1)
+            if no=="":
+                no = SearchByID()
+            else:
+                no=self.AddMember(no,1)
             if no<0:
                 return no
         if no>=self.maxMem or no<0:
             return -1
-        if priority<0 or priority>2:
+        if p<0 or p>2:
             return -2
-        for i in range(priority,3):
+        for i in range(p,3):
             self.member[no].wish[i].start = CRefine(y,m,d)
             self.member[no].wish[i].end = CRefine(y,m,d)
             self.member[no].wish[i].end.addDay(3)
         self.member[no].allocated = 0
         if self.loginsuccess>0:
-            outdatestr = self.member[no].wish[priority].start.refineToString()
-            indatestr = self.member[no].wish[priority].end.refineToString()
-            query = "insert into Application (memNo,outdate,indate,priority) values ("
-            query += str(no)+",'"+outdatestr + "','"+ indatestr + "'," + str(priority) + ")"
+            outdatestr = self.slot[0].start.refineToString()
+            indatestr = self.slot[self.maxSlot-1].end.refineToString()
+            query = "select priority from Application where memNo like "
+            query += str(no)+" and outdate>='"+outdatestr+"' and indate<'"+indatestr+"'"
+            try:
+                self.cursor.execute(query)
+                self.connection.commit()
+            except mysql.connector.Error as err:
+                return err.errno * -1
+            t=0
+            for priority in self.cursor:
+                if priority==p:
+                    t=1
+            outdatestr = self.member[no].wish[p].start.refineToString()
+            indatestr = self.member[no].wish[p].end.refineToString()
+            if t:
+                query = "update Application set outdate='"
+                query += outdatestr+"',indate='"
+                query += indatestr+"' where priority like "+str(p)
+            else:
+                query = "insert into Application (memNo,outdate,indate,priority) values ("
+                query += str(no)+",'"+outdatestr + "','"+ indatestr + "'," + str(p) + ")"
             try:
                 self.cursor.execute(query)
                 self.connection.commit()
@@ -343,7 +396,10 @@ class CPortal:
     #return neg int if error occurs
     def InsertFixed(self,no, y,m,d, y2,m2,d2):
         if type(no)==str:
-            no=self.AddMember(no,1)
+            if no=="":
+                no = SearchByID()
+            else:
+                no=self.AddMember(no,1)
             if no<0:
                 return no
         self.member[no].fixed.append(InfoStr())
