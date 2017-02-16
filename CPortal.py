@@ -235,18 +235,17 @@ class CPortal:
 
     #search memno by self.ID
     def SearchByID(self):
-        if loginsuccess ==0:
+        if self.loginsuccess ==0:
             return -1
         query = "select name from Member where ID like '"+self.ID+"'"
         try:
             self.cursor.execute(query)
-            self.connection.commit()
         except mysql.connector.Error as err:
             return err.errno * -1
-        tname = ""
+        tname = "nonameexist"
         for name in self.cursor:
-            tname = name
-        return SearchMemNo(tname)
+            tname = name[0]
+        return self.SearchMemNo(tname)
     
     #add a new member if he doesn't exist before
     #if no error occurs, return his member no.
@@ -260,7 +259,6 @@ class CPortal:
             query = "select memNo from Member where ID like '"+self.ID+"'"
             try:
                 self.cursor.execute(query)
-                self.connection.commit()
             except mysql.connector.Error as err:
                 return err.errno * -1
             tNo = -1
@@ -348,7 +346,7 @@ class CPortal:
         p -= 1
         if type(no)==str:
             if no=="":
-                no = SearchByID()
+                no = self.SearchByID()
             else:
                 no=self.AddMember(no,1)
             if no<0:
@@ -363,18 +361,14 @@ class CPortal:
             self.member[no].wish[i].end.addDay(3)
         self.member[no].allocated = 0
         if self.loginsuccess>0:
-            outdatestr = self.slot[0].start.refineToString()
-            indatestr = self.slot[self.maxSlot-1].end.refineToString()
-            query = "select priority from Application where memNo like "
-            query += str(no)+" and outdate>='"+outdatestr+"' and indate<'"+indatestr+"'"
+            query = "select priority from Application where memNo like "+str(no)
             try:
                 self.cursor.execute(query)
-                self.connection.commit()
             except mysql.connector.Error as err:
                 return err.errno * -1
             t=0
             for priority in self.cursor:
-                if priority==p:
+                if priority[0]==p:
                     t=1
             outdatestr = self.member[no].wish[p].start.refineToString()
             indatestr = self.member[no].wish[p].end.refineToString()
@@ -397,7 +391,7 @@ class CPortal:
     def InsertFixed(self,no, y,m,d, y2,m2,d2):
         if type(no)==str:
             if no=="":
-                no = SearchByID()
+                no = self.SearchByID()
             else:
                 no=self.AddMember(no,1)
             if no<0:

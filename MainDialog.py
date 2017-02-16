@@ -223,6 +223,8 @@ class MainDialog(QWidget):
             self.Edit1.show()
             self.Label1.move(20,35)
             self.Edit1.move(80,30)
+            self.Edit1.setFocus()
+            self.Edit1.selectAll()
         self.Label21.show()
         self.Label22.show()
         self.Label23.show()
@@ -245,8 +247,8 @@ class MainDialog(QWidget):
             self.ResLabel[i].hide()
         self.Button1.move(200,90)
         self.Button1.show()
-        self.Edit1.setFocus()
-        self.Edit1.selectAll()
+        self.Edit21.setFocus()
+        self.Edit21.selectAll()
     def Func4(self):
         self.mode = 4
         if self.portal.loginsuccess != 2:
@@ -254,6 +256,8 @@ class MainDialog(QWidget):
             self.Edit1.show()
             self.Label1.move(20,35)
             self.Edit1.move(80,30)
+            self.Edit1.setFocus()
+            self.Edit1.selectAll()
         self.Label21.show()
         self.Label22.show()
         self.Label23.show()
@@ -276,8 +280,8 @@ class MainDialog(QWidget):
             self.ResLabel[i].hide()
         self.Button1.move(115,90)
         self.Button1.show()
-        self.Edit1.setFocus()
-        self.Edit1.selectAll()
+        self.Edit21.setFocus()
+        self.Edit21.selectAll()
     def Func5(self):
         err = self.Simulate()
         if err==0:
