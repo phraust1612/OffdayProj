@@ -68,11 +68,15 @@ class MainDialog(QWidget):
         self.MainButton6.resize(150,35)
         self.MainButton6.move(730,230)
         self.MainButton6.clicked.connect(self.Func7)
-        self.MainButton8 = QPushButton('사용자추가 (F8)',self)
+        self.MainButton8 = QPushButton('비밀번호 수정 (F8)',self)
         self.MainButton8.resize(150,35)
         self.MainButton8.move(730,270)
         self.MainButton8.clicked.connect(self.Func9)
-        self.MainButton7 = QPushButton('종료 (F9)',self)
+        self.MainButton9 = QPushButton('사용자 추가 (F9)',self)
+        self.MainButton9.resize(150,35)
+        self.MainButton9.move(730,310)
+        self.MainButton9.clicked.connect(self.Func10)
+        self.MainButton7 = QPushButton('종료 (F10)',self)
         self.MainButton7.resize(150,35)
         self.MainButton7.move(730,430)
         self.MainButton7.clicked.connect(self.Func8)
@@ -151,6 +155,7 @@ class MainDialog(QWidget):
         self.MainButton5.hide()
         self.MainButton6.hide()
         self.MainButton8.hide()
+        self.MainButton9.hide()
         self.show()
     def center(self):
         qr = self.frameGeometry()
@@ -172,10 +177,12 @@ class MainDialog(QWidget):
             self.Func6()
         elif e.key()==Qt.Key_F7 and self.mode!=0:
             self.Func7()
-        elif e.key()==Qt.Key_F9:
+        elif e.key()==Qt.Key_F10:
             self.Func8()
         elif e.key()==Qt.Key_F8 and self.mode!=0:
             self.Func9()
+        elif e.key()==Qt.Key_F9 and self.mode!=0:
+            self.Func10()
         elif e.key()==Qt.Key_Enter or e.key()==Qt.Key_Return:
             self.Confirm()
             if self.mode==2:
@@ -349,6 +356,36 @@ class MainDialog(QWidget):
         self.Button1.show()
         self.Edit1.setFocus()
         self.Edit1.selectAll()
+    def Func10(self):
+        self.mode = 10
+        self.Label1.show()
+        self.Label1.move(360,185)
+        self.Edit1.show()
+        self.Edit1.move(400,180)
+        self.Label21.hide()
+        self.Label22.hide()
+        self.Label23.hide()
+        self.Label31.hide()
+        self.Label32.hide()
+        self.Label33.hide()
+        self.Label4.hide()
+        self.Edit21.hide()
+        self.Edit22.hide()
+        self.Edit23.hide()
+        self.Edit31.hide()
+        self.Edit32.hide()
+        self.Edit33.hide()
+        self.Edit4.hide()
+        self.LabelID.show()
+        self.LabelPW.show()
+        self.EditID.show()
+        self.EditPW.show()
+        self.Button1.move(505,220)
+        for i in range(0,16):
+            self.ResLabel[i].hide()
+        self.Button1.show()
+        self.Edit1.setFocus()
+        self.Edit1.selectAll()
     def Confirm(self):
         name = self.Edit1.text()
         year1 = self.Edit21.text()
@@ -441,6 +478,14 @@ class MainDialog(QWidget):
         elif self.mode == 9:
             ID = self.EditID.text()
             PW = self.EditPW.text()
+            err = self.portal.SQLModID(ID,PW,name)
+            if err==0:
+                msg = QMessageBox.information(self,'ㅇㅋ','수정됨', QMessageBox.Yes, QMessageBox.Yes)
+            else:
+                msg = QMessageBox.warning(self,'ㄴㄴ!!','수정실패 : '+str(err), QMessageBox.Yes, QMessageBox.Yes)
+        elif self.mode == 10:
+            ID = self.EditID.text()
+            PW = self.EditPW.text()
             err = self.portal.SQLNewID(ID,PW,name)
             if err==0:
                 msg = QMessageBox.information(self,'ㅇㅋ','생성됨', QMessageBox.Yes, QMessageBox.Yes)
@@ -463,7 +508,6 @@ class MainDialog(QWidget):
             if self.portal.loginsuccess == 2:
                 self.MainButton3.move(730,30)
                 self.MainButton8.move(730,70)
-                self.MainButton8.setText("비밀번호 수정 (F8)")
                 self.MainButton7.move(730,110)
             else:
                 self.MainButton1.show()
@@ -471,7 +515,8 @@ class MainDialog(QWidget):
                 self.MainButton4.show()
                 self.MainButton5.show()
                 self.MainButton6.show()
-                self.MainButton7.move(730,310)
+                self.MainButton9.show()
+                self.MainButton7.move(730,350)
         elif err == 1045:
             msg = QMessageBox.warning(self,'에러!!!','ID 혹은 비밀번호가 잘 못 되었습니다.', QMessageBox.Yes, QMessageBox.Yes)
         elif err == 1049:

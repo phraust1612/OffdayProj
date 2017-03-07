@@ -34,12 +34,8 @@ class CPortal:
         self.p = []
         self.r = []
     def __del__(self):
-        self.loginsuccess = 0
-        self.p_err = 0
         self.slot = 0
         self.member = 0
-        self.maxMem = 0
-        self.maxSlot = 0
         self.ID = ""
         self.p = 0
         self.r = 0
@@ -68,7 +64,9 @@ class CPortal:
 
     #make a new account and grant it for right privileges
     def SQLNewID(self,ID,PW,name):
-        if self.loginsuccess ==1:
+        if self.loginsuccess ==0:
+            return 1
+        else:
             query = "create user '" + ID + "'@'%'identified by '" + PW + "'"
             try:
                 self.cursor.execute(query)
@@ -81,18 +79,26 @@ class CPortal:
                 self.connection.commit()
             except mysql.connector.Error as err:
                 return err.errno * -1
-            AddMember(name,1)
+            self.AddMember(name,ID)
             return 0
-        elif self.loginsuccess == 2:
-            query = "set password for '"+ID+"'@'%' = password('"+PW+"')"
+
+    def SQLModID(self,ID,PW,name):
+        if self.loginsuccess ==0:
+            return 1
+        else:
+            query = "set password for '"+ID+"'@'%'=password('"+PW+"')"
+            try:
+                self.cursor.execute(query)
+                self.connection.commit()
+            except mysql.connector.Error as err:
+                return err.errno * -1
+            query = "update member set name='"+name+"' where ID like '"+ID+"'"
             try:
                 self.cursor.execute(query)
                 self.connection.commit()
             except mysql.connector.Error as err:
                 return err.errno * -1
             return 0
-        else:
-            return 1
 
     #quick sort :)
     def q_sort(self,left,right):
@@ -251,12 +257,12 @@ class CPortal:
     #if no error occurs, return his member no.
     #if some db error occurs, return negative errno
     #if qgo==0, it doesn't input into db
-    def AddMember(self,name,qgo):
+    def AddMember(self,name,nID):
         i=self.SearchMemNo(name)
         if i>=0:
             return i
-        if self.loginsuccess>0 and qgo>0:
-            query = "select memNo from Member where ID like '"+self.ID+"'"
+        if self.loginsuccess>0 and type(nID)==str:
+            query = "select memNo from Member where ID like '"+nID+"'"
             try:
                 self.cursor.execute(query)
             except mysql.connector.Error as err:
@@ -265,10 +271,11 @@ class CPortal:
             for memNo in self.cursor:
                 tNo = memNo
             if tNo>=0:
-                query = "update Member set name='"+name+"'"
+                query = "update Member set name='"+name+"' where ID like '"
+                query += nID + "'"
             else:
                 query = "insert into Member (memNo,name,ID) values ("
-                query += str(self.maxMem)+",'"+name+"','"+self.ID+"')"
+                query += str(self.maxMem)+",'"+name+"','"+nID+"')"
             try:
                 self.cursor.execute(query)
                 self.connection.commit()
